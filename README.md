@@ -7,6 +7,11 @@ The AI is trained to predict whether a student will "Pass" or "Fail" based on tw
 Network Architecture (2-4-2)
 This network uses a simple Multi-Layer Perceptron (MLP) architecture with one hidden layer. The flow of information is as follows:
 
+## Network Architecture (2-4-2)
+
+This network uses a simple Multi-Layer Perceptron (MLP) architecture with one hidden layer. The flow of information is as follows:
+
+```text
 [Input Layer] (2 Neurons)
      ( )  [Score]
      ( )  [Study Hours]
@@ -24,6 +29,7 @@ This network uses a simple Multi-Layer Perceptron (MLP) architecture with one hi
 [Output Layer] (2 Neurons)
      ( )  [FAIL]
      ( )  [PASS]
+```
 Features
 100% NumPy: The entire neural network (forward pass, backpropagation, and loss calculation) is built from scratch.
 
