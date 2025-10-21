@@ -1,5 +1,8 @@
 Student Pass/Fail AI (Neural Network from Scratch in NumPy)
 
+(here -- https://neuralnetworknromscratchinnumpy.netlify.app/
+a modern-looking visualization for 2-4-2 neural network.)
+
 This project is a complete, functional Artificial Intelligence built from the ground up using only NumPy. It demonstrates the core mathematics and logic of deep learning without relying on any high-level libraries like TensorFlow or Keras.
 
 The AI is trained to predict whether a student will "Pass" or "Fail" based on two features: their Score and their Study Hours.
