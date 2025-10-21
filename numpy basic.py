@@ -53,7 +53,7 @@ print(f"Input shape: {inputs.shape}")
 print(f"Labels shape: {labels.shape}\n")
 
 input_size = 2
-hidden_size = 4
+hidden_size = 8
 output_size = 2
 
 hidden_weights = np.random.randn(input_size, hidden_size) * 0.01
@@ -61,8 +61,8 @@ hidden_biases = np.zeros(hidden_size) * 0.01
 output_weights = np.random.randn(hidden_size, output_size) * 0.01
 output_biases = np.zeros(output_size) * 0.01
 
-learning_rate = 0.1
-epochs = 1000
+learning_rate = 0.005
+epochs = 100000
 
 
 names = ["student1", "student2"]
@@ -101,7 +101,7 @@ def calculate_loss(output_probs, labels):
 for epoch in range(epochs):
     hidden_outputs, output_probs, hidden_inputs = forward_pass(inputs)
     backward_pass(inputs, labels, hidden_outputs, output_probs, hidden_inputs)
-    if (epoch + 1) % 200 == 0:
+    if (epoch + 1) % 2000 == 0:
         loss_calculation = calculate_loss(output_probs, labels)
         print("Epoch:", epoch + 1, "Loss:", loss_calculation)
 
