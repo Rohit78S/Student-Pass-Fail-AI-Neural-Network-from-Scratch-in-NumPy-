@@ -47,22 +47,26 @@ df = pd.read_csv('student_data_1000.csv')
 # Extract inputs and labels
 inputs = df[['Score', 'Study_Hours']].values
 labels = df[['Label_Fail', 'Label_Pass']].values
-
 print(f"Loaded {len(inputs)} samples from CSV")
 print(f"Input shape: {inputs.shape}")
 print(f"Labels shape: {labels.shape}\n")
 
 input_size = 2
-hidden_size = 8
+hidden_size1 = 4
+hidden_size2 = 4
 output_size = 2
 
-hidden_weights = np.random.randn(input_size, hidden_size) * 0.01
-hidden_biases = np.zeros(hidden_size) * 0.01
-output_weights = np.random.randn(hidden_size, output_size) * 0.01
-output_biases = np.zeros(output_size) * 0.01
+hidden_weights1 = np.random.randn(input_size, hidden_size1)  * 0.01
+hidden_biases1 = np.zeros(hidden_size1)
+
+hidden_weights2 = np.random.randn(hidden_size1, hidden_size2) * 0.01
+hidden_biases2 = np.zeros(hidden_size2)
+
+output_weights = np.random.randn(hidden_size2, output_size) * 0.01
+output_biases = np.zeros(output_size)
 
 learning_rate = 0.005
-epochs = 100000
+epochs = 1000000
 
 
 names = ["student1", "student2"]
@@ -76,38 +80,45 @@ def softmax(x):
     return exp_x / np.sum(exp_x, axis=1, keepdims=True)
 
 def forward_pass(data):
-    hidden_inputs = np.dot(data, hidden_weights) + hidden_biases
-    hidden_outputs = sigmoid(hidden_inputs)
-    output_inputs = np.dot(hidden_outputs, output_weights) + output_biases
+    hidden_inputs1 = np.dot(data, hidden_weights1) + hidden_biases1
+    hidden_outputs1 = sigmoid(hidden_inputs1)
+    hidden_inputs2 = np.dot(hidden_outputs1, hidden_weights2) + hidden_biases2
+    hidden_outputs2 = sigmoid(hidden_inputs2)
+    output_inputs = np.dot(hidden_outputs2, output_weights) + output_biases
     output_probs = softmax(output_inputs)
-    return hidden_outputs, output_probs, hidden_inputs
-def backward_pass(data, labels, hidden_outputs, output_probs, hidden_inputs):
-    global hidden_weights, hidden_biases, output_weights, output_biases
+    return output_probs, hidden_outputs1, hidden_outputs2, hidden_inputs1, hidden_inputs2
+def backward_pass(data, labels, output_probs, hidden_inputs1, hidden_outputs1, hidden_inputs2, hidden_outputs2):
+    global hidden_weights1, hidden_biases1, hidden_weights2, hidden_biases2, output_weights, output_biases
     num_samples = data.shape[0]
     output_error = output_probs - labels
     output_delta = output_error
-    output_weights -= learning_rate * np.dot(hidden_outputs.T, output_delta) /  num_samples
+    output_weights -= learning_rate * np.dot(hidden_outputs2.T, output_delta) / num_samples
     output_biases -= learning_rate * np.sum(output_delta, axis=0) / num_samples
 
-    hidden_error = np.dot(output_delta, output_weights.T)
-    hidden_delta = hidden_error * sigmoid_derivative(hidden_outputs)
+    hidden_error2 = np.dot(output_delta, output_weights.T)
+    hidden_delta2 = hidden_error2 * sigmoid_derivative(hidden_outputs2)
+    hidden_weights2 -= learning_rate * np.dot(hidden_outputs1.T, hidden_delta2) /num_samples
+    hidden_biases2 -= learning_rate * np.sum(hidden_delta2, axis=0) / num_samples
 
-    hidden_weights -= learning_rate * np.dot(data.T, hidden_delta) / num_samples
-    hidden_biases -= learning_rate * np.sum(hidden_delta, axis=0) / num_samples
+    hidden_error1 = np.dot(hidden_delta2, hidden_weights2.T)
+    hidden_delta1 = hidden_error1 * sigmoid_derivative(hidden_outputs1)
+    hidden_weights1 -= learning_rate * np.dot(data.T, hidden_delta1) /num_samples
+    hidden_biases1 -= learning_rate * np.sum(hidden_delta1, axis=0) / num_samples
+
 
 def calculate_loss(output_probs, labels):
     return -np.mean(np.sum(labels * np.log(output_probs + 1e-8), axis=1))
 
 for epoch in range(epochs):
-    hidden_outputs, output_probs, hidden_inputs = forward_pass(inputs)
-    backward_pass(inputs, labels, hidden_outputs, output_probs, hidden_inputs)
-    if (epoch + 1) % 2000 == 0:
+    output_probs, hidden_outputs1, hidden_outputs2, hidden_inputs1, hidden_inputs2 = forward_pass(inputs)
+    backward_pass(inputs, labels, output_probs, hidden_inputs1, hidden_outputs1, hidden_inputs2, hidden_outputs2)
+    if (epoch + 1) % 20000 == 0:
         loss_calculation = calculate_loss(output_probs, labels)
         print("Epoch:", epoch + 1, "Loss:", loss_calculation)
 
 print("\nTraining Complete!\n")
 
-hidden_outputs, output_probs, _ = forward_pass(inputs)
+output_probs, hidden_outputs1, hidden_outputs2, hidden_inputs1, hidden_inputs2 = forward_pass(inputs)
 predictions = np.argmax(output_probs, axis=1)
 
 for i in range(min(2, len(inputs))):
@@ -122,7 +133,7 @@ user_inputs = np.array([
     [float(input("Enter Score for Student2: ")), float(input("Enter Study Hours for Student2: "))]
 ])
 
-user_hidden_outputs, user_output_probs, _ = forward_pass(user_inputs)
+user_output_probs, user_hidden_outputs1, user_hidden_outputs2, user_hidden_inputs1, user_hidden_inputs2 = forward_pass(user_inputs)
 user_predictions = np.argmax(user_output_probs, axis=1)
 
 for i in range(len(names)):
@@ -130,3 +141,6 @@ for i in range(len(names)):
     confidence = user_output_probs[i, user_predictions[i]] * 100
     print(f"Prediction for {names[i]}: {verdict}")
     print(f"(Confidence: {confidence:.1f}%)\n")
+
+
+
